@@ -567,11 +567,11 @@
             }
         };
 
-        // --- テスト用関数 ---
+      {  // --- テスト用関数 ---
         const testAPIConnection = async () => {
             const resultDiv = document.getElementById('ocr-result');
             
-            if (RENDER_OCR_API_URL === 'YOUR_RENDER_WEB_SERVICE_URL_HERE/api/ocr' || 
+            if (RENDER_OCR_API_URL === 'https://finance-rejk.onrender.com/api/ocr' || 
                 RENDER_OCR_API_URL === 'https://your-app-name.onrender.com/api/ocr') {
                 resultDiv.innerHTML = `
                     <div class="text-red-700 bg-red-50 p-2 rounded border">
@@ -620,9 +620,9 @@
                 </div>
             `;
         };
+        };
         
         // --- START THE APP ---   
-        // --- START THE APP ---
         init();
     });
     </script>
