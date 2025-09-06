@@ -1,0 +1,93 @@
+★Render用のサービスアカウント作成およびキー発行
+# Step 1: 環境変数設定
+export PROJECT_ID=$(gcloud config get-value project)
+export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+
+echo "Project ID: $PROJECT_ID"
+echo "Project Number: $PROJECT_NUMBER"
+Your active configuration is: [cloudshell-3408]
+Project ID: bookkeeping-471202
+Project Number: 54998579506
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 2: 必要なAPIを有効化
+gcloud services enable vision.googleapis.com
+gcloud services enable iam.googleapis.com
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 3: サービスアカウント作成（Render.com用）
+gcloud iam service-accounts create render-vision-service \
+    --display-name="Render Vision OCR Service Account" \
+    --project="$PROJECT_ID"
+Created service account [render-vision-service].
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 4: Vision APIの権限を付与
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:render-vision-service@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/ml.developer"
+Updated IAM policy for project [bookkeeping-471202].
+bindings:
+- members:
+  - serviceAccount:service-54998579506@containerregistry.iam.gserviceaccount.com
+  role: roles/containerregistry.ServiceAgent
+- members:
+  - serviceAccount:54998579506-compute@developer.gserviceaccount.com
+  role: roles/editor
+- members:
+  - serviceAccount:render-vision-service@bookkeeping-471202.iam.gserviceaccount.com
+  role: roles/ml.developer
+- members:
+  - user:iadai.494@gmail.com
+  role: roles/owner
+- members:
+  - serviceAccount:service-54998579506@gcp-sa-pubsub.iam.gserviceaccount.com
+  role: roles/pubsub.serviceAgent
+- members:
+  - serviceAccount:service-54998579506@serverless-robot-prod.iam.gserviceaccount.com
+  role: roles/run.serviceAgent
+- members:
+  - serviceAccount:bookkeeping@bookkeeping-471202.iam.gserviceaccount.com
+  role: roles/viewer
+- members:
+  - serviceAccount:bookkeeping@bookkeeping-471202.iam.gserviceaccount.com
+  role: roles/visionai.serviceAgent
+etag: BwY-Ith40mQ=
+version: 1
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 5: サービスアカウントキーを作成（JSON形式）
+gcloud iam service-accounts keys create ~/render-service-key.json \
+    --iam-account="render-vision-service@$PROJECT_ID.iam.gserviceaccount.com"
+
+echo "=== サービスアカウントキーが作成されました ==="
+echo "ファイル場所: ~/render-service-key.json"
+created key [c8be291721c5468918e1705fb26d0a0b577ad0b6] of type [json] as [/home/iadai_494/render-service-key.json] for [render-vision-service@bookkeeping-471202.iam.gserviceaccount.com]
+=== サービスアカウントキーが作成されました ===
+ファイル場所: ~/render-service-key.json
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 6: キーファイルの内容を表示（Render.comにコピー用）
+echo "=== 以下の内容をRender.comの環境変数にコピーしてください ==="
+cat ~/render-service-key.json
+=== 以下の内容をRender.comの環境変数にコピーしてください ===
+{
+  "type": "service_account",
+  "project_id": "bookkeeping-471202",
+  "private_key_id": "c8be291721c5468918e1705fb26d0a0b577ad0b6",
+  "private_key": "-----BEGIN PRIVATE KEY（試しに作ってみた系）-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDOqqm2yboNU2GD\nk2QtAJs/l5C/RedY2vmzmRw9+T/xMjNT0h176LbwdMByfOwhDLvxNvWLEWCWakBy\nhXAHJuQdLWXnjbhF0g/vO/mZQdQYR7biWQXjOncPIWapYARF3N5UKeOFtFOmfLV5\nSAZFB+NxzXUTb6wsBTVzVIUknmeZsPoVfZsOfj2dPJj3Dqjo2lMZZHVspfTbDea0\n7nP5r5RPYujsEnOYyDcEM/FzWQNBLO+gJM+CVlhEVFGpAwhmPjFe1KAbylfS6SBf\nB0cyEMfHNwBsMjnRaTxzPebH5DlIhK+BaE57ruHo95Bk2wZ3oKocF8l3sBj8wT5e\nR2rDDPR9AgMBAAECggEAHl/qfD1XbUx3PVetJkkbyEOuSFKNn1tlzl3/TuOCoKBc\nd2IfJ75LHvnF7D3MlcnxmJEXkzY9YDYjHUHb9o0ig2BQBTGo5wgqA+Moevw4IE5w\nBIIJkb1e0Ng7psLANgVxnuSeNmFL1yEmqfnqQ/yWEvyby7zCzSCB297NB9YJS4b5\nw+Hn4JwGU3+AN40ggJTf/cLucmP3CzaI9p6l81dh1lMxB0EWbnpri7PlcNMN9H0M\nScyVMeIwiCoif40WvbACNAi2hPmfAWvmHLG8Mis8p+lGLapSA0zkDP/g71/9jTOQ\nI4Y07ov6OwsP++4Fk2Wk8SQJVPCOQilr73v82AY2WQKBgQD7nMRz6lpyoyt/1oNj\nN7GjO+5ZUn/VV3OgqZh4AeHFnP1HLn5O71qksKBURgyQmISaq7pOGFZfzAaMRx30\nkWuT7/iGa64k8GpQoygjH9fXRFrxwgpsN+aCI4f2WobU1pNy96Cbd0xol3VOxYHr\njcitkfdUQ/BF0siD5pakcecaRQKBgQDSRUBpXW4SXPImU/toTbP2vJgGDDK495dE\nA34Z11t+S3ZHn+20PN0EPZJ0PDqFSdYEhbmDezmgNde1v/1f7acT1Ysw0z+UlrZl\nrKIx+vgP5toq/Aby4LvknmvnKILtoDQwbFmH0nfVsbYOEAJqjE/hn1RYIIsi9qHx\nqiShS1vw2QKBgGYGJSqTZmWBgEvv4YrDtIXp8TXK3AbX1Qzad/aBXNjSVWkdkx3S\ntEB/ViOV29Zt4acN5xdviuaBRk5vL9hRdvufnHh1BUH5MkLMRaQob07carwI4E0N\nRayTV7gu8OkwsM03V6pyb0shzvFH6Oxoq2yl+VHz0mOdmqzRPVgkz365AoGBAJ5Z\nPJqcm6oEiO9IS4pPCfoEKNBVG1WkTywPHUXEoshHd/mUfORA+YiZ/dK/EKsT4bJi\nKkTT5Z+7LIlY3i0BwdLz+/B3BeiWXyHOkg7lmy4OgbnhNjJt/9G5ZDUekwr0nJji\n38GjRE+PlzSb5dXreLTG0jPTvjREW8ysfw1gvQpxAoGBAInl2ytE9/QNHjrE2THA\n/edcLxz9UO6/msh7giGvjNkMa9n6pE+gGvFQnl5g44CLRwGlDcqqjqNTI94m/mCx\ndMhANFRwS85Bg3h+AHxau6weDigswNc+6hFLPoQsMfidehqLf/3A+5b9tcnbxnTp\nw+qHeRiro1RxoeaNE3wKWWw+\n-----END PRIVATE KEY-----\n",
+  "client_email": "render-vision-service@bookkeeping-471202.iam.gserviceaccount.com",
+  "client_id": "105681538752682103896",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/render-vision-service%40bookkeeping-471202.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+
+iadai_494@cloudshell:~ (bookkeeping-471202)$ 
+# Step 7: セキュリティのため、表示後にキーファイルを削除
+echo ""
+echo "⚠️  セキュリティ注意: 内容をコピー後、以下のコマンドでファイルを削除してください ⚠️"
+echo "rm ~/render-service-key.json"
