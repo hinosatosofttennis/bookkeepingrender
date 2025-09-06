@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- SEO対策 1: Titleタグの最適化。サービス名と、ユーザーが検索するキーワードを入れます。 -->
     <title>Bookkee - クラウド会計＆簿記ソフト (Business Accounting & Bookkeeping Software)</title>
-    <!-- SEO対策 2: Meta Descriptionの追加。検索結果に表示される説明文です。クリックしたくなるような魅力的な文章にします。 -->
     <meta name="description" content="Bookkeeは、タッチ操作で直感的に使えるクラウド会計＆簿記ソフトです。OCRによるレシート読取、部門別会計、確定申告・還付申告まで、個人事業主や中小企業の経理を強力にサポートします。">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,32 +25,25 @@
 
     <div class="container mx-auto max-w-4xl p-4">
         
-        <!-- Header -->
         <header class="flex justify-between items-center mb-4 p-4 bg-white rounded-lg shadow">
-            <!-- SEO対策 3: h1タグの最適化。ページの最も重要な見出しです。サービス名を明確に記述します。 -->
             <h1 class="text-2xl font-bold text-gray-800">Bookkee</h1>
             <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-2">
                     <span class="text-sm font-medium text-gray-500">事業:</span>
                     <select id="business-type-tag" class="text-sm font-semibold text-indigo-600 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        <!-- Options will be populated by JS -->
-                    </select>
+                        </select>
                 </div>
-                <!-- New Settings Button -->
                 <button id="settings-btn-header" class="bg-orange-500 text-white text-xs font-bold py-1 px-4 rounded-full hover:bg-orange-600 transition duration-300">設定</button>
             </div>
         </header>
 
-        <!-- Navigation -->
         <nav class="flex justify-around bg-white rounded-lg shadow p-2 mb-4">
             <button data-view="dashboard" class="nav-item flex-1 text-center font-semibold py-2 px-4 rounded-md active">ダッシュボード</button>
             <button data-view="input" class="nav-item flex-1 text-center font-semibold py-2 px-4 rounded-md">取引入力</button>
             <button data-view="reports" class="nav-item flex-1 text-center font-semibold py-2 px-4 rounded-md">レポート</button>
         </nav>
 
-        <!-- Main Content -->
         <main>
-            <!-- Dashboard View -->
             <div id="dashboard-view" class="view active bg-white p-6 rounded-lg shadow">
                 <h2 class="text-xl font-bold mb-4">ダッシュボード</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -75,11 +66,9 @@
                 </div>
             </div>
 
-            <!-- Transaction Input View -->
             <div id="input-view" class="view bg-white p-6 rounded-lg shadow">
                 <h2 class="text-xl font-bold mb-4">取引入力</h2>
                 
-                <!-- OCR Section -->
                 <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg mb-6">
                     <h3 class="font-semibold text-indigo-800 mb-2">📷 OCRで自動入力</h3>
                     <p class="text-sm text-indigo-700 mb-3">レシートや領収書の写真をアップロードして簡単入力！</p>
@@ -88,7 +77,6 @@
                     <div id="ocr-result" class="text-sm mt-2"></div>
                 </div>
 
-                <!-- Manual Input Form -->
                 <form id="transaction-form" class="space-y-4">
                     <div>
                         <label for="tx-date" class="block text-sm font-medium text-gray-700">日付</label>
@@ -131,8 +119,7 @@
                      <div>
                         <label for="tx-department" class="block text-sm font-medium text-gray-700">部門</label>
                         <select id="tx-department" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                           <!-- Options will be populated by JS -->
-                        </select>
+                            </select>
                     </div>
                     <div>
                         <label for="tx-notes" class="block text-sm font-medium text-gray-700">摘要</label>
@@ -144,7 +131,6 @@
                 </form>
             </div>
 
-            <!-- Reports View -->
             <div id="reports-view" class="view bg-white p-6 rounded-lg shadow">
                 <h2 class="text-xl font-bold mb-4">レポート</h2>
                 <div class="mb-4">
@@ -168,17 +154,14 @@
                             </tr>
                         </thead>
                         <tbody id="transaction-list" class="bg-white divide-y divide-gray-200">
-                           <!-- Transaction rows will be populated by JS -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Settings View -->
             <div id="settings-view" class="view bg-white p-6 rounded-lg shadow space-y-8">
                 <h2 class="text-xl font-bold">設定</h2>
                 
-                <!-- Operator Type Setting -->
                 <div>
                     <h3 class="text-lg font-semibold mb-2">事業者区分</h3>
                     <div class="flex items-center space-x-4">
@@ -193,29 +176,24 @@
                     </div>
                 </div>
 
-                <!-- Business Type Settings -->
                 <div>
                     <h3 class="text-lg font-semibold mb-2">事業セクション管理</h3>
                     <div id="business-types-list" class="space-y-2">
-                        <!-- Business types will be listed by JS -->
-                    </div>
+                        </div>
                     <form id="add-business-type-form" class="mt-4 flex items-center space-x-2">
                         <input type="text" id="new-business-type-name" placeholder="新しい事業名 (例: コンサル事業)" required class="flex-grow border-gray-300 rounded-md shadow-sm">
                         <button type="submit" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">追加</button>
                     </form>
                 </div>
 
-                <!-- Department Settings -->
                 <div>
                     <h3 class="text-lg font-semibold mb-2">部門管理</h3>
                      <div id="departments-list" class="space-y-2">
-                        <!-- Departments will be listed by JS -->
-                    </div>
+                        </div>
                     <form id="add-department-form" class="mt-4 flex items-center space-x-2">
                         <input type="text" id="new-department-name" placeholder="新しい部門名 (例: 経理部)" required class="flex-grow border-gray-300 rounded-md shadow-sm">
                         <select id="new-department-business-type" class="border-gray-300 rounded-md shadow-sm">
-                            <!-- Options will be populated by JS -->
-                        </select>
+                            </select>
                         <button type="submit" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">追加</button>
                     </form>
                 </div>
@@ -227,8 +205,9 @@
     document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIGURATION ---
         // !!! 重要 !!!
-        // 下の行に、デプロイしたCloud FunctionのトリガーURLを設定してください
-        const CLOUD_FUNCTION_URL = 'https://asia-northeast1-extreme-voice-471004-b1.cloudfunctions.net/ocrprocessor'; 
+        // 下の行に、RenderでデプロイしたWeb ServiceのURLとAPIエンドポイントを設定してください
+        // 例: 'https://your-app-name.onrender.com/api/ocr'
+        const RENDER_OCR_API_URL = 'YOUR_RENDER_WEB_SERVICE_URL_HERE/api/ocr'; 
 
         // --- STATE MANAGEMENT ---
         let DB = {
@@ -538,13 +517,13 @@
         const handleOcrUpload = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
-            if (CLOUD_FUNCTION_URL === 'https://name-service') {
-            alert('エラー: Cloud FunctionのURIが設定されていません。管理者に連絡してください。');
-            e.target.value = ''; // Clear file input
-            return;
-            }
             
+            if (RENDER_OCR_API_URL === 'YOUR_RENDER_WEB_SERVICE_URL_HERE/api/ocr') {
+                alert('エラー: Render APIのURLが設定されていません。管理者に連絡してください。');
+                e.target.value = ''; // Clear file input
+                return;
+            }
+
             const spinner = document.getElementById('ocr-spinner');
             spinner.style.display = 'block';
 
@@ -552,14 +531,15 @@
             formData.append('file', file);
 
             try {
-                // Send file to the secure backend server (Cloud Function)
-                const response = await fetch(CLOUD_FUNCTION_URL, {
+                // Send file to the secure backend server (Render Web Service)
+                const response = await fetch(RENDER_OCR_API_URL, {
                     method: 'POST',
                     body: formData,
                 });
 
                 if (!response.ok) {
-                    throw new Error(`サーバーエラー: ${response.statusText}`);
+                    const errorResult = await response.json();
+                    throw new Error(`サーバーエラー: ${errorResult.error || response.statusText}`);
                 }
 
                 const result = await response.json();
@@ -580,7 +560,7 @@
 
             } catch (error) {
                 console.error('OCR Error:', error);
-                alert('OCR処理中にエラーが発生しました。ファイルを確認するか、手動で入力してください。');
+                alert(`OCR処理中にエラーが発生しました。: ${error.message}`);
             } finally {
                 spinner.style.display = 'none';
                 e.target.value = ''; // Clear the file input for next use
