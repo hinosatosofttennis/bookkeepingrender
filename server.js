@@ -13,7 +13,7 @@ app.use(cors({
   origin: [
     'https://claude.ai',
     'https://your-frontend-domain.com', // 実際のフロントエンドドメインに変更
-    'http://localhost:3000' // 開発環境用
+    'http://localhost:1000' // 開発環境用
   ],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
