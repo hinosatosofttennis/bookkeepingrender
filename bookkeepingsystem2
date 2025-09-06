@@ -518,7 +518,7 @@
             const file = e.target.files[0];
             if (!file) return;
             
-            if (RENDER_OCR_API_URL === 'YOUR_RENDER_WEB_SERVICE_URL_HERE/api/ocr') {
+            if (RENDER_OCR_API_URL === 'https://finance-rejk.onrender.com/api/ocr') {
                 alert('エラー: Render APIのURLが設定されていません。管理者に連絡してください。');
                 e.target.value = ''; // Clear file input
                 return;
@@ -566,7 +566,63 @@
                 e.target.value = ''; // Clear the file input for next use
             }
         };
+     };
+
+        // --- テスト用関数 ---
+        const testAPIConnection = async () => {
+            const resultDiv = document.getElementById('ocr-result');
+            
+            if (RENDER_OCR_API_URL === 'YOUR_RENDER_WEB_SERVICE_URL_HERE/api/ocr' || 
+                RENDER_OCR_API_URL === 'https://your-app-name.onrender.com/api/ocr') {
+                resultDiv.innerHTML = `
+                    <div class="text-red-700 bg-red-50 p-2 rounded border">
+                        ❌ APIのURLが設定されていません<br>
+                        コード内のRENDER_OCR_API_URLを実際のURLに変更してください
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const healthUrl = RENDER_OCR_API_URL.replace('/api/ocr', '/health');
+                console.log('接続テスト開始:', healthUrl);
+                
+                const response = await fetch(healthUrl);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="text-green-700 bg-green-50 p-2 rounded border">
+                        ✅ サーバー接続成功<br>
+                        📊 状態: ${data.status}<br>
+                        🕒 稼働時間: ${Math.floor(data.uptime)}秒<br>
+                        🤖 Vision API: ${data.visionClient ? '✅' : '❌'}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('接続テストエラー:', error);
+                resultDiv.innerHTML = `
+                    <div class="text-red-700 bg-red-50 p-2 rounded border">
+                        ❌ サーバー接続失敗<br>
+                        エラー: ${error.message}<br>
+                        URL: ${RENDER_OCR_API_URL.replace('/api/ocr', '/health')}
+                    </div>
+                `;
+            }
+        };
+
+        const checkAPIUrl = () => {
+            const resultDiv = document.getElementById('ocr-result');
+            resultDiv.innerHTML = `
+                <div class="text-blue-700 bg-blue-50 p-2 rounded border">
+                    🔍 現在の設定<br>
+                    API URL: ${RENDER_OCR_API_URL}<br>
+                    Health URL: ${RENDER_OCR_API_URL.replace('/api/ocr', '/health')}<br>
+                    Base URL: ${RENDER_OCR_API_URL.replace('/api/ocr', '')}
+                </div>
+            `;
+        };
         
+        // --- START THE APP ---   
         // --- START THE APP ---
         init();
     });
