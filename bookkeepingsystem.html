@@ -518,7 +518,7 @@
             const file = e.target.files[0];
             if (!file) return;
             
-            if (RENDER_OCR_API_URL === 'https://finance-rejk.onrender.com/api/ocr') {
+            if (RENDER_OCR_API_URL === 'your-app-name.onrender.com/api/ocr') {
                 alert('エラー: Render APIのURLが設定されていません。管理者に連絡してください。');
                 e.target.value = ''; // Clear file input
                 return;
