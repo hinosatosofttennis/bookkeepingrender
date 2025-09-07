@@ -214,35 +214,35 @@ const parseReceiptText = (text) => {
         if (maxAmount > 0) {
             result.amount = maxAmount;
         }
+        
+        // --- 店舗名や摘要の検出（シンプル版） ---
+        const uselessWords = /領収書|領収証|合計|小計|お釣|税込|税抜|クレジット|控え|様|[0-9]{2,}|[¥\\#￥]/;
 
-       // --- 店舗名や摘要の検出（シンプル版） ---
-const uselessWords = /領収書|領収証|合計|小計|お釣|税込|税抜|クレジット|控え|様|[0-9]{2,}|[¥\\#￥]/;
+        let bestNote = '';
 
-let bestNote = '';
-
-// 優先度1: 「店」「施設」「（株）」など、店名らしいキーワードを含む行
-const priorityKeywords = /店|施設|（株）|株式会社|商店|食堂|マート|ストア/;
-for (const line of lines) {
-    // 日付や金額のパターンチェックを削除し、uselessWordsに集約
-    if (priorityKeywords.test(line) && !uselessWords.test(line) && line.length > 2) {
-        bestNote = line;
-        break;
-    }
-}
-
-// 優先度2: 優先度1で見つからなかった場合、一般的な条件に合う行を探す
-if (!bestNote) {
-    for (const line of lines) {
-        // 日付や金額のパターンチェックを削除し、uselessWordsに集約
-        if (!uselessWords.test(line) && line.length > 2) {
-            bestNote = line;
-            break;
+        // 優先度1: 「店」「施設」「（株）」など、店名らしいキーワードを含む行
+        const priorityKeywords = /店|施設|（株）|株式会社|商店|食堂|マート|ストア/;
+        for (const line of lines) {
+            // 日付や金額のパターンチェックを削除し、uselessWordsに集約
+            if (priorityKeywords.test(line) && !uselessWords.test(line) && line.length > 2) {
+                bestNote = line;
+                break;
+            }
         }
-    }
-}
 
-// 摘要が見つからなかった場合は空にする
-result.notes = bestNote;
+        // 優先度2: 優先度1で見つからなかった場合、一般的な条件に合う行を探す
+        if (!bestNote) {
+            for (const line of lines) {
+                // 日付や金額のパターンチェックを削除し、uselessWordsに集約
+                if (!uselessWords.test(line) && line.length > 2) {
+                    bestNote = line;
+                    break;
+                }
+            }
+        }
+
+        // 摘要が見つからなかった場合は空にする
+            result.notes = bestNote;
 
         // 日付が検出されない場合は、今日の日付を使用
         if (!result.date) {
