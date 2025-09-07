@@ -131,6 +131,8 @@ const processOCR = async (imageBuffer) => {
 
     // テキストを解析して構造化データに変換
     const parsedData = parseReceiptText(fullText);
+  　// ↓ この行を追加して、解析結果をログに出力する
+   　console.log('解析後のデータ:', parsedData);
     
     return {
       success: true,
