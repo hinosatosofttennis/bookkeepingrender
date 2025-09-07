@@ -546,7 +546,11 @@
                 
                 // Populate form with parsed data from the server
                 if (result.date) txDate.value = result.date;
-                if (result.amount) txAmount.value = result.amount;
+                if (result.amount && !isNaN(result.amount.replace(/[\\¥]/g, ''))) {
+                txAmount.value = result.amount.replace(/[\\¥]/g, '');
+                } else {
+                txAmount.value = '';
+                }       
                 if (result.notes) txNotes.value = result.notes;
 
                 // Suggest account based on notes (simple example)
