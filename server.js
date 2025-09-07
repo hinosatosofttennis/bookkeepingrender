@@ -149,27 +149,9 @@ const parseReceiptText = (text) => {
   const result = { date: '', amount: '', notes: '' };
   
   try {
-    // ▼▼▼ 【追加】文字正規化処理 ▼▼▼
-    // OCRで誤認識された文字を修正
-    const normalizeText = (text) => {
-      return text
-        .replace(/\\/g, '¥')        // バックスラッシュを円記号に変換
-        .replace(/＼/g, '¥')        // 全角バックスラッシュも円記号に変換
-        .replace(/￥/g, '¥');       // 全角円記号を半角円記号に変換
-        .replace(/#/g, '¥')         // #も円記号に変換
-    };
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     
-    // テキストを正規化
-    const normalizedText = normalizeText(text);
-    console.log('正規化前テキスト:', text);
-    console.log('正規化後テキスト:', normalizedText);
-    // ▲▲▲ 【追加終了】 ▲▲▲
-    
-    // ▼▼▼ 【変更】normalizedTextを使用 ▼▼▼
-    const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    // ▲▲▲ 【変更終了】 ▲▲▲
-    
-    // 日付の検出部分（変更なし）
+    // 日付の検出（YYYY/MM/DD, YYYY-MM-DD, MM/DD形式など）
     const dateRegexes = [
       /(\d{4})[/-](\d{1,2})[/-](\d{1,2})/,
       /(\d{1,2})[/-](\d{1,2})[/-](\d{4})/,
@@ -193,35 +175,26 @@ const parseReceiptText = (text) => {
       }
     }
 
-    // ▼▼▼ 【変更】金額検出の正規表現を改良 ▼▼▼
+    // 金額の検出（¥マークや数字の後に円がある場合など）
     const amountRegexes = [
-      /[¥￥\\]?[\s]*([0-9,]+)[\s]*円/,        // 円記号＋円
-      /合計[\s]*[¥￥\\]?[\s]*([0-9,]+)/,      // 合計行
-      /小計[\s]*[¥￥\\]?[\s]*([0-9,]+)/,      // 小計行
-      /[¥￥\\]([0-9,]+)/,                      // 記号付き金額
-      /([0-9,]{3,})円/,                        // 3桁以上+円
-      /\\([0-9,]+)/                            // \で始まる金額（念のため）
+      /[¥￥]?[\s]*([0-9,]+)[\s]*円/,
+      /合計[\s]*[¥￥]?[\s]*([0-9,]+)/,
+      /小計[\s]*[¥￥]?[\s]*([0-9,]+)/,
+      /[¥￥]([0-9,]+)/,
+      /([0-9,]{3,})円/
     ];
 
     for (const line of lines) {
       for (const regex of amountRegexes) {
         const match = line.match(regex);
-        if (match && match[1] && !result.amount) {
-          // ▼▼▼ 【変更】数値検証を追加 ▼▼▼
-          const cleanAmount = match[1].replace(/,/g, '');
-          if (!isNaN(cleanAmount) && cleanAmount !== '' && cleanAmount.length > 0) {
-            result.amount = parseInt(cleanAmount, 10);
-            console.log('検出された金額:', result.amount, '元の文字列:', match[0]);
-            break;
-          }
-          // ▲▲▲ 【変更終了】 ▲▲▲
+        if (match && !result.amount) {
+          result.amount = parseInt(match[1].replace(/,/g, ''), 10);
+          break;
         }
       }
-      if (result.amount) break; // 見つかったらループを抜ける
     }
-    // ▲▲▲ 【変更終了】 ▲▲▲
 
-    // 店舗名検出部分（変更なし）
+    // 店舗名や摘要の検出（最初の数行から推測）
     const storeNameCandidates = lines.slice(0, 3);
     for (const candidate of storeNameCandidates) {
       if (candidate.length > 1 && candidate.length < 30 && 
