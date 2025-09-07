@@ -227,10 +227,11 @@ const parseReceiptText = (text) => {
                 break;
             }
         }
-        // 摘要が見つからない場合は、最初の行をフォールバックとして使用
-        if (!result.notes && lines.length > 0) {
-            result.notes = lines[0];
-        }
+        // 摘要が見つからない場合、"領収書"以外の最初の行をフォールバックとして使用
+        if (!result.notes && lines.length > 0) {
+            const fallbackNote = lines.find(line => !/領収書|領収証/.test(line));
+            result.notes = fallbackNote || ''; // 見つからなければ空にする
+        }
 
         // 日付が検出されない場合は、今日の日付を使用
         if (!result.date) {
