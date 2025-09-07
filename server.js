@@ -216,10 +216,13 @@ const parseReceiptText = (text) => {
         }
 
         // --- 店舗名や摘要の検出 ---
-        const storeNameCandidates = lines.slice(0, 5);
+        const storeNameCandidates = lines.slice(0, 6);
+        // 優先度1: 「店」「施設」「（株）」など、店名らしいキーワードを含む行
+        const priorityKeywords = /店|施設|（株）|株式会社|商店|食堂|マート|ストア/;
         for (const candidate of storeNameCandidates) {
             // "領収書" という単語や日付、金額を含まない行を摘要候補とする
             if (candidate.length > 1 && candidate.length < 30 &&
+                priorityKeywords.test(candidate) &&
                 !/領収書|領収証/.test(candidate) &&
                 !/[0-9]{2,}[/-年.]/.test(candidate) &&
                 !/[¥\\#￥]?[0-9,]{3,}/.test(candidate)) {
