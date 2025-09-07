@@ -153,28 +153,40 @@ const parseReceiptText = (text) => {
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-        // --- 日付の検出を強化 ---
-        const dateRegexes = [
-            /(?<year>\d{4})[/-年](?<month>\d{1,2})[/-月](?<day>\d{1,2})/, // YYYY/MM/DD, YYYY-MM-DD, YYYY年MM月DD日
-            // ↓ "25.-7. 21" のようなフォーマットに対応
-            /(?<year>\d{2,4})[.-](?<month>\d{1,2})[.-](?<day>\d{1,2})/ 
-        ];
+       // ▼▼▼ 日付の検出を改善（ドット区切りに対応） ▼▼▼
+    const dateRegexes = [
+      /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
+      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{1,2})/,      // MM/DD/YY, MM-DD-YY, MM.DD.YY（2桁年）
+      /(\d{1,2})[/.-](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
+    ];
 
-        for (const line of lines) {
-            for (const regex of dateRegexes) {
-                const match = line.match(regex);
-                if (match && !result.date) {
-                    let { year, month, day } = match.groups;
-                    // 年が2桁の場合は2000年代と仮定
-                    if (year.length === 2) {
-                        year = `20${year}`;
-                    }
-                    result.date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                    break;
-                }
-            }
-            if(result.date) break; // 日付が見つかったらループを抜ける
+    for (const line of lines) {
+      for (const regex of dateRegexes) {
+        const match = line.match(regex);
+        if (match && !result.date) {
+          console.log('日付マッチ:', match); // デバッグ用
+          
+          if (match[3] && match[3].length === 4) { 
+            // MM/DD/YYYY形式
+            result.date = `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+          } else if (match[1] && match[1].length === 4) { 
+            // YYYY/MM/DD形式
+            result.date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+          } else if (match[1] && match[2] && match[3] && match[3].length === 2) { 
+            // MM/DD/YY形式（2桁年）
+            const year = parseInt(match[3], 10);
+            const fullYear = year > 50 ? 1900 + year : 2000 + year; // 50より大きければ19xx年
+            result.date = `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+          } else if (match[1] && match[2] && !match[3]) { 
+            // MM/DD形式
+            const currentYear = new Date().getFullYear();
+            result.date = `${currentYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+          }
+          break;
         }
+      }
+    }
 
         // --- 金額の検出を強化 ---
         let maxAmount = 0;
