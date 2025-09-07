@@ -547,8 +547,8 @@
                 // Populate form with parsed data from the server
                 if (result.date) txDate.value = result.date;
                  // ▼▼▼ 金額の検証処理を追加 ▼▼▼
-                 // amountがnullや空文字でなく、かつ有効な数値の場合のみフォームにセットする
-                if (result.amount !== null && result.amount !== '' && !isNaN(result.amount.replace(/[\\¥#]/g, ''))) {
+                 // amountが空文字でなく、かつ有効な数値の場合のみフォームにセットする
+                if (result.amount !== '' && !isNaN(result.amount.replace(/[\\¥#]/g, ''))) {
                 txAmount.value = result.amount.replace(/[\\¥#]/g, '');
                 } else {
                  // 金額が取得できなかった場合は、入力欄を空にする
