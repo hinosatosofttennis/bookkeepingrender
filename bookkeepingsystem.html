@@ -588,13 +588,13 @@
 
                 // gptからの自動入力提案
                 if(result.success) {
-                    document.getElementByID('tx-date').value = result.data.date ??"";
-                    document.getElementByID('tx-amount').value = result.data.amount ??"";
-                    document.getElementByID('tx-notes').value = result.data.notes ??"";
+                    document.getElementById('tx-date').value = result.data.date ??"";
+                    document.getElementById('tx-amount').value = result.data.amount ??"";
+                    document.getElementById('tx-notes').value = result.data.notes ??"";
 
-                    resulted.innerText = 'OCR成功:\n日付: ${result.data.date ??"不明"}\n金額:${result.data.amount ??"不明"}\n備考:${result.data.notes}';
+                    resultEl.innerText = 'OCR成功:\n日付: ${result.data.date ??"不明"}\n金額:${result.data.amount ??"不明"}\n摘要:${result.data.notes}';
                     } else {
-                      resulted.innerText = 'OCR失敗: ${result.error}';
+                      resultEl.innerText = 'OCR失敗: ${result.error}';
                     } 
                 } catch(err) {
                       console.error("OCRリクエストエラー:", err);
