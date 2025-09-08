@@ -600,7 +600,6 @@
                       console.error("OCRリクエストエラー:", err);
                       document.getElementById("ocr-result").innerText = "OCRリクエストに失敗しました。";
                  } 
-             } 
 
                 // 4. 勘定科目の提案
                 if (result.data.notes && (result.data.notes.includes('手土産') || result.data.notes.includes('会食'))) {
