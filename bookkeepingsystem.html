@@ -561,7 +561,7 @@
         }
 
         const result = await response.json();
-        const ocrData = result?.data || {};
+        const ocrData = result && result.data ? result.data : {};
         const populatedFields = [];
 
         // --- 日付 ---
