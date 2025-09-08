@@ -586,20 +586,7 @@
                     populatedFields.push('摘要');
                 }
 
-                // gptからの自動入力提案
-                if(result.success) {
-                    document.getElementById('tx-date').value = result.data.date ??"";
-                    document.getElementById('tx-amount').value = result.data.amount ??"";
-                    document.getElementById('tx-notes').value = result.data.notes ??"";
-
-                    resultEl.innerText = 'OCR成功:\n日付: ${result.data.date ??"不明"}\n金額:${result.data.amount ??"不明"}\n摘要:${result.data.notes}';
-                    } else {
-                      resultEl.innerText = 'OCR失敗: ${result.error}';
-                    } 
-                } catch(err) {
-                      console.error("OCRリクエストエラー:", err);
-                      document.getElementById("ocr-result").innerText = "OCRリクエストに失敗しました。";
-                 } 
+       
 
                 // 4. 勘定科目の提案
                 if (result.data.notes && (result.data.notes.includes('手土産') || result.data.notes.includes('会食'))) {
