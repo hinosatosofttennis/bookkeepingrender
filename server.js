@@ -148,7 +148,7 @@ const processOCR = async (imageBuffer) => {
 
 // レシートテキストの解析関数（修正版）
 const parseReceiptText = (text) => {
-    const result = { date: '', amount: null, notes: '' }; // amountの初期値をnullに変更
+    const result = { date: null, amount: null, notes: null }; // amount以外も初期値をnullに変更
 
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -283,19 +283,26 @@ app.post('/api/ocr', upload.single('file'), async (req, res) => {
 
     const result = await processOCR(req.file.buffer);
 
+    // 成功時のレスポンスを構造化
     res.json({
       success: true,
-      date: result.parsedData.date,
-      amount: result.parsedData.amount,
-      notes: result.parsedData.notes,
-      rawText: result.text,
-      timestamp: new Date().toISOString()
+      data:{
+        date: result.parsedData.date,
+        amount: result.parsedData.amount,
+        notes: result.parsedData.notes,
+      },
+      metadata:{
+        rawText: result.text,
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error) {
     console.error('OCRエンドポイントエラー:', error);
+    // エラー時のレスポンスにもsuccess:falseを加える
     res.status(500).json({
-      error: 'OCR処理中にエラーが発生しました',
+      success: false,
+      error: 'OCR処理中にサーバーエラーが発生しました',
       details: error.message,
       code: 'OCR_PROCESSING_ERROR'
     });
