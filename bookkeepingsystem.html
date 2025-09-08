@@ -513,25 +513,43 @@
             }
         };
 
-        // --- OCR IMPLEMENTATION (Real) ---
+  // --- OCR IMPLEMENTATION (Robust Version) ---
+
+        /**
+         * yyyy-mm-dd形式の文字列が、カレンダーとして有効な日付か検証する関数
+         * @param {string} dateString - 検証する日付文字列
+         * @returns {boolean} - 有効な場合はtrue, 無効な場合はfalse
+         */
+        const isValidDateString = (dateString) => {
+            // 1. yyyy-mm-ddの形式にマッチするかチェック
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                return false;
+            }
+            // 2. 実際にDateオブジェクトに変換してみて、有効な日付かチェック
+            // 例: '2025-02-30' は '2025-03-01' などに自動補正されるため、元の文字列と比較する
+            const d = new Date(dateString);
+            return d.toISOString().slice(0, 10) === dateString;
+        };
+
         const handleOcrUpload = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
+
             if (RENDER_OCR_API_URL === 'your-app-name.onrender.com/api/ocr') {
                 alert('エラー: Render APIのURLが設定されていません。管理者に連絡してください。');
-                e.target.value = ''; // Clear file input
+                e.target.value = '';
                 return;
             }
 
             const spinner = document.getElementById('ocr-spinner');
+            const resultDiv = document.getElementById('ocr-result');
             spinner.style.display = 'block';
+            resultDiv.innerHTML = ''; // 前回の結果をクリア
 
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                // Send file to the secure backend server (Render Web Service)
                 const response = await fetch(RENDER_OCR_API_URL, {
                     method: 'POST',
                     body: formData,
@@ -544,33 +562,68 @@
 
                 const result = await response.json();
                 
-                // Populate form with parsed data from the server
-                if (result.date) txDate.value = result.date;
-                 // ▼▼▼ 金額の検証処理を追加 ▼▼▼
-                 // amountが空文字でなく、かつ有効な数値の場合のみフォームにセットする
-                if (result.amount !== '' && !isNaN(result.amount.replace(/[\\¥#]/g, ''))) {
-                txAmount.value = result.amount.replace(/[\\¥#]/g, '');
-                } else {
-                 // 金額が取得できなかった場合は、入力欄を空にする
-                txAmount.value = '';
-                }
-                if (result.notes) txNotes.value = result.notes;
+                // --- フォームへの自動入力処理とフィードバック ---
+                const populatedFields = []; // 自動入力した項目を記録する配列
 
-                // Suggest account based on notes (simple example)
-                if (result.notes && (result.notes.includes('手土産') || result.notes.includes('会食'))) {
-                    txAccount.value = '交際接待費';
-                } else if (result.notes && (result.notes.includes('ストア') || result.notes.includes('コンビニ'))) {
-                    txAccount.value = '消耗品費';
+                // 1. 日付の処理（検証を追加）
+                if (result.date && isValidDateString(result.date)) {
+                    txDate.value = result.date;
+                    populatedFields.push(`日付 (${result.date})`);
+                }
+
+                // 2. 金額の処理（既存のロジックを流用）
+                const cleanedAmount = result.amount ? result.amount.toString().replace(/[\\¥#,]/g, '') : '';
+                if (cleanedAmount !== '' && !isNaN(cleanedAmount)) {
+                    txAmount.value = cleanedAmount;
+                    populatedFields.push(`金額 (${parseInt(cleanedAmount).toLocaleString()}円)`);
+                } else {
+                    txAmount.value = '';
                 }
                 
-                alert('OCR解析が完了しました。内容を確認して登録してください。');
+                // 3. 摘要の処理
+                if (result.notes) {
+                    txNotes.value = result.notes;
+                    populatedFields.push('摘要');
+                }
+
+                // 4. 勘定科目の提案
+                if (result.notes && (result.notes.includes('手土産') || result.notes.includes('会食'))) {
+                    txAccount.value = '交際接待費';
+                    populatedFields.push('勘定科目 (交際接待費)');
+                } else if (result.notes && (result.notes.includes('ストア') || result.notes.includes('コンビニ'))) {
+                    txAccount.value = '消耗品費';
+                    populatedFields.push('勘定科目 (消耗品費)');
+                }
+                
+                // --- 結果をユーザーに通知 ---
+                if (populatedFields.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-800 bg-green-50 p-3 rounded-lg border border-green-200">
+                            <p class="font-semibold">✅ OCR解析が完了しました。</p>
+                            <p class="text-sm">以下の項目を自動入力しました: ${populatedFields.join('、')}</p>
+                            <p class="text-sm mt-1">内容を確認し、必要に応じて修正して登録してください。</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="text-yellow-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <p class="font-semibold">⚠️ OCR解析が完了しましたが、自動入力できる項目がありませんでした。</p>
+                            <p class="text-sm">手動で入力してください。</p>
+                        </div>
+                    `;
+                }
 
             } catch (error) {
                 console.error('OCR Error:', error);
-                alert(`OCR処理中にエラーが発生しました。: ${error.message}`);
+                resultDiv.innerHTML = `
+                    <div class="text-red-800 bg-red-50 p-3 rounded-lg border border-red-200">
+                        <p class="font-semibold">❌ OCR処理中にエラーが発生しました。</p>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                `;
             } finally {
                 spinner.style.display = 'none';
-                e.target.value = ''; // Clear the file input for next use
+                e.target.value = ''; // 次のアップロードのためにファイル入力をクリア
             }
         };
 
