@@ -561,12 +561,25 @@
                 }
                 
                 alert('OCR解析が完了しました。内容を確認して登録してください。');
+                // --- フォームへの自動入力処理とフィードバック ---
+                const populatedFields = []; // 自動入力した項目を記録する配列
+                
 
                 // gptからの自動入力提案
                 if(result.success) {
                     document.getElementById('tx-date').value = result.parsedData.date;
                     document.getElementById('tx-amount').value = result.parsedData.amount;
                     document.getElementById('tx-notes').value = result.parsedData.notes;
+                }
+                // --- 結果をユーザーに通知 ---
+                if (populatedFields.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-800 bg-green-50 p-3 rounded-lg border border-green-200">
+                            <p class="font-semibold">✅ OCR解析が完了しました。</p>
+                            <p class="text-sm">以下の項目を自動入力しました: ${populatedFields.join('、')}</p>
+                            <p class="text-sm mt-1">内容を確認し、必要に応じて修正して登録してください。</p>
+                        </div>
+                    `;
                 }
 
             } catch (error) {
