@@ -550,8 +550,7 @@
                 if (result.date) txDate.value = result.date;
                  // ▼▼▼ 金額の検証処理を追加 ▼▼▼
                  // amountが空文字でなく、かつ有効な数値の場合のみフォームにセットする
-                if (result.amount !== '' && !isNaN(result.amount.replace(/[\\¥#]/g, ''))) {
-                txAmount.value = result.amount.replace(/[\\¥#]/g, '');
+                if (result.amount) txAmount.value = result.amount.replace(/[\\¥#]/g,'');
                 } 
                 if (result.notes) txNotes.value = result.notes;
 
