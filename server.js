@@ -170,13 +170,13 @@ const parseReceiptText = (text) => {
         if (match && !result.date) {
           console.log('日付マッチ:', match); // デバッグ用
           
-          if (match[3] && match[3].length === 4) { 
-            // YYYY/MM/DD形式
-            result.date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
-          } else if (match[1] && match[2] && match[3] && match[3].length === 2) { 
+       if (match[1] && match[1].length === 4) { 
+           // YYYY/MM/DD形式
+            result.date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`; 
+          } else if (match[3] && match[3].length === 4) { 
             // MM/DD/YYYY形式
             result.date = `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-          } else if (match[1] && match[1].length === 4) { 
+          } else if (match[1] && match[2] && match[3] && match[3].length === 2) { 
             // MM/DD/YY形式（2桁年）
             const year = parseInt(match[3], 10);
             const fullYear = year > 50 ? 1900 + year : 2000 + year; // 50より大きければ19xx年
