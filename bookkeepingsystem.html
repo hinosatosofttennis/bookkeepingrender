@@ -552,10 +552,7 @@
                  // amountが空文字でなく、かつ有効な数値の場合のみフォームにセットする
                 if (result.amount !== '' && !isNaN(result.amount.replace(/[\\¥#]/g, ''))) {
                 txAmount.value = result.amount.replace(/[\\¥#]/g, '');
-                } else {
-                 // 金額が取得できなかった場合は、入力欄を空にする
-                txAmount.value = '';
-                }
+                } 
                 if (result.notes) txNotes.value = result.notes;
 
                 // Suggest account based on notes (simple example)
