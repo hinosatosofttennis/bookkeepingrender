@@ -566,11 +566,11 @@
 
                 // gptからの自動入力提案
                 if(result.success) {
-                    document.getElementByID('tx-date').value = result.date ??"";
-                    document.getElementByID('tx-amount').value = result.amount ??"";
-                    document.getElementByID('tx-notes').value = result.notes ??"";
+                    document.getElementByID('tx-date').value = result.date;
+                    document.getElementByID('tx-amount').value = result.amount;
+                    document.getElementByID('tx-notes').value = result.notes;
 
-                    resulted.innerText = 'OCR成功:\n日付: ${result.data.date ??"不明"}\n金額:${result.data.amount ??"不明"}\n備考:${result.data.notes}';
+                    result.innerText = 'OCR成功:\n日付: ${result.date ??"不明"}\n金額:${result.amount ??"不明"}\n備考:${result.notes}';
                 }
 
             } catch (error) {
