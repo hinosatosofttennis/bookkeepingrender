@@ -560,9 +560,6 @@
                     txAccount.value = '消耗品費';
                 }
 
-                 // --- フォームへの自動入力処理とフィードバック ---
-                const populatedFields = []; // 自動入力した項目を記録する配列
-
                 // gptからの自動入力提案
                 if(result.success) {
                     document.getElementById('tx-date').value = result.parsedData.date;
@@ -570,11 +567,11 @@
                     document.getElementById('tx-notes').value = result.parsedData.notes;
                 }
                 // --- 結果をユーザーに通知 ---
-                alert('✅OCR解析が完了しました。内容を確認して登録してください。');
+                alert('✅OCR解析が完了しました。');
 
-            } catch (error) 
+            } catch (error) {
                 console.error('OCR Error:', error);
-                alert(`❌ OCR処理中にエラーが発生しました。: ${error.message}`);
+                alert(`⚠️ 内容を確認して登録してください。: ${error.message}`);
             } finally {
                 spinner.style.display = 'none';
                 e.target.value = ''; // Clear the file input for next use
