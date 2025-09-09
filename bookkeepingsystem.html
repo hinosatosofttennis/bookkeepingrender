@@ -550,7 +550,7 @@
                 if (result.date) txDate.value = result.date;
                  // ▼▼▼ 金額の検証処理を追加 ▼▼▼
                  // amountが空文字でなく、かつ有効な数値の場合のみフォームにセットする
-                if (result.amount) txAmount.value = result.amount.replace(/[\\¥#]/g,'');
+                if (result.amount) txAmount.value = result.amount.replace;
                 if (result.notes) txNotes.value = result.notes;
 
                 // Suggest account based on notes (simple example)
