@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 // CORS設定（Claude.ai artifacts用に最適化）
 app.use(cors({
   origin: [
+   'https://render.com/docs/web-services#port-binding'
    "https://hinosatosofttennis.github.io",
    'https://finance-rejk.onrender.com',
     // Claude.ai関連ドメイン
