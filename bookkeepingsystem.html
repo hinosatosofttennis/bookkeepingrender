@@ -567,8 +567,6 @@
                     document.getElementById('tx-date').value = result.parsedData.date;
                     document.getElementById('tx-amount').value = result.parsedData.amount;
                     document.getElementById('tx-notes').value = result.parsedData.notes;
-
-                    result.innerText = 'OCR成功:\n日付: ${result.date ??"不明"}\n金額:${result.amount ??"不明"}\n備考:${result.notes}';
                 }
 
             } catch (error) {
