@@ -206,7 +206,7 @@ const parseReceiptText = (text) => {
                 // 時刻ではないことを確認（:が後に続かない）
                 validator: (m, d) => true
             }
-        ];
+         };
 
         // 日付妥当性チェック関数
         const isValidDate = (year, month, day) => {
