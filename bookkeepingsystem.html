@@ -559,17 +559,8 @@
                 } else if (result.notes && (result.notes.includes('ストア') || result.notes.includes('コンビニ'))) {
                     txAccount.value = '消耗品費';
                 }
-                // --- 結果をユーザーに通知 --- `
-                <div class="text-green-800 bg-green-50 p-3 rounded-lg border border-green-200">
-                    <p class="font-semibold">
-                    alert('✅ OCR解析が完了しました。内容を確認して登録してください。');
-                    </p>
-                    <p class="text-sm">以下の項目を自動入力しました: ${populatedFields.join('、')}</p>
-                    <p class="text-sm mt-1">内容を確認し、必要に応じて修正して登録してください。</p>
-                </div>
-            
-                alert('OCR解析が完了しました。内容を確認して登録してください。');
-                // --- フォームへの自動入力処理とフィードバック ---
+
+                 // --- フォームへの自動入力処理とフィードバック ---
                 const populatedFields = []; // 自動入力した項目を記録する配列
 
                 // gptからの自動入力提案
@@ -588,6 +579,7 @@
                         </div>
                     `;
                 }
+                alert('OCR解析が完了しました。内容を確認して登録してください。');
 
             } catch (error) {
                 console.error('OCR Error:', error);
