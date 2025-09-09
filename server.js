@@ -1,4 +1,4 @@
-// server.js - Render.com backend server with Workload Identity
+ // server.js - Render.com backend server with Workload Identity
 const express = require('express');
 const multer = require('multer');
 const vision = require('@google-cloud/vision');
@@ -147,8 +147,8 @@ const processOCR = async (imageBuffer) => {
 };
 
 // レシートテキストの解析関数（修正版）
-const parseReceiptText = (Text) => {
-    const result = { date: '', amount: '', notes: '' }; // amount以外も初期値をnullに変更
+const parseReceiptText = (text) => {
+    const result = { date: '', amount: null, notes: '' }; // amountの初期値をnullに変更
 
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -283,26 +283,19 @@ app.post('/api/ocr', upload.single('file'), async (req, res) => {
 
     const result = await processOCR(req.file.buffer);
 
-    // 成功時のレスポンスを構造化
     res.json({
       success: true,
-      data:{
-        date: result.parsedData.date,
-        amount: result.parsedData.amount,
-        notes: result.parsedData.notes,
-      },
-      metadata:{
-        rawText: result.text,
-        timestamp: new Date().toISOString()
-      }
+      date: result.parsedData.date,
+      amount: result.parsedData.amount,
+      notes: result.parsedData.notes,
+      rawText: result.text,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
     console.error('OCRエンドポイントエラー:', error);
-    // エラー時のレスポンスにもsuccess:falseを加える
     res.status(500).json({
-      success: false,
-      error: 'OCR処理中にサーバーエラーが発生しました',
+      error: 'OCR処理中にエラーが発生しました',
       details: error.message,
       code: 'OCR_PROCESSING_ERROR'
     });
