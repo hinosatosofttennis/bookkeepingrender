@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 // CORS設定（Claude.ai artifacts用に最適化）
 app.use(cors({
   origin: [
+   'https://finance-rejk.onrender.com/api/ocr',
     // Claude.ai関連ドメイン
     'https://claude.ai',
     'https://artifacts.claude.ai',
