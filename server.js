@@ -158,7 +158,8 @@ const parseReceiptText = (text) => {
 
        // ▼▼▼ 日付の検出を改善（ドット区切りに対応） ▼▼▼
     const dateRegexes = [
-      /(\d{4})[/.-年](\d{1,2})[/.-月](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+      /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+      /(\d{4})[年](\d{1,2})[月](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
       /(\d{1,2})[/.-月](\d{1,2})[/.-日](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
       /(\d{1,2})[/.-年](\d{1,2})[/.-月](\d{1,2})/,      // YY/MM/DD, YY-MM-DD, YY.MM.DD（2桁年）
       /(\d{1,2})[/.-月](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
