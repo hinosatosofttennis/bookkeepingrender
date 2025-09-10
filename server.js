@@ -155,6 +155,7 @@ const parseReceiptText = (text) => {
     if (!text || typeof text !== 'string') {
         return result;
     }
+const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
           const dateFormats = [
         { group: 'YYYY年MM月DD日', regex: /(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
