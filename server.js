@@ -151,12 +151,12 @@ const processOCR = async (imageBuffer) => {
 
 // レシートテキストの解析関数（修正版）
 const parseReceiptText = (text) => {
-    const result = { date: '', amount: null, notes: '' }; // amountの初期値をnullに変更
+  　const result = { date: null, amount: null, notes: null };
+    if (!text || typeof text !== 'string') {
+        return result;
+    }
 
-    try {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-      const dateFormats = [
+          const dateFormats = [
         { group: 'YYYY年MM月DD日', regex: /(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
         { group: 'YYYY/MM/DD', regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
         { group: 'MM/DD/YYYY', regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/, formatter: m => `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` },
