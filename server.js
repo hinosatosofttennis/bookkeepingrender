@@ -173,7 +173,7 @@ const parseReceiptText = (text) => {
         // --- グループ3: 年が2桁 ---
         // 例: 01/31/24, 01-31-24, 01.31.24
         // \b は単語境界。これがないと YYYY 形式の一部（例: "20" of "2024"）にマッチする可能性があるため追加。
-     　　{
+        {
 　　 　　　   name: 'YY/MM/DD',
  　　　　　   // 正規表現の順番を YY, MM, DD に変更
  　　　　　   regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/, 
@@ -186,101 +186,7 @@ const parseReceiptText = (text) => {
      　　　　　   return `${fullYear}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
   　　　　　  }
 　　　　　},
-   
-        {
-            name: 'MM/DD/YY',
-            regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/,
-            formatter: (match) => {
-                const year = parseInt(match[3], 10);
-                // 2桁の年から4桁の年を推測（50より大きければ19xx年、そうでなければ20xx年）
-                const fullYear = year > 50 ? 1900 + year : 2000 + year;
-                return `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-            }
-        },
-        // --- グループ4: 年なし（最も低い優先度） ---
-        // 例: 01/31, 01-31, 01.31
-        // \b を使い、金額（例: 1,234.56）の一部にマッチするのを防ぐ
-        {
-            name: 'MM/DD',
-            regex: /\b(\d{1,2})[/.-](\d{1,2})\b/,
-            formatter: (match) => {
-                const currentYear = new Date().getFullYear();
-                return `${currentYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-            }
-        }
-    ];
-
-    // ▼▼▼ 定義したフォーマットを使って日付を検索 ▼▼▼
-    for (const line of lines) {
-        for (const format of dateFormats) {
-            const match = line.match(format.regex);
-            if (match) {
-                console.log(`日付を検出しました。グループ: "${format.name}", マッチ:`, match[0]); // デバッグ用
-                result.date = format.formatter(match);
-                break; // この行で日付が見つかったので、他のフォーマットを試すのをやめる
-            }
-        }
-        if (result.date) {
-            break; // レシート全体で最初に見つかった日付を採用し、ループを終了
-        }
-    }
-
-    // （金額や備考の解析ロジックはここに続く...）
-
-    return result;
-};
-
-// --- テスト実行 ---
-const receipt1 = "領収書\n日付: 2025.09.10\n合計: 5,000円";
-const receipt2 = "RECEIPT\nDATE: 09/10/25\nTOTAL: $50.00";
-const receipt3 = "ご利用明細\n購入日 9-10\n金額 3,000";
-
-console.log('--- レシート1 ---');
-console.log(parseReceiptText(receipt1)); // { date: '2025-09-10', ... }
-
-console.log('\n--- レシート2 ---');
-console.log(parseReceiptText(receipt2)); // { date: '2025-09-10', ... }
-
-console.log('\n--- レシート3 ---');
-console.log(parseReceiptText(receipt3)); // { date: '2025-09-10', ... } (現在の年が2025年の場合)
-
-【その次】年が2桁の形式: MM/DD/YY。年を推測する必要がありますが、年月日が揃っているため、年がない形式より優先します。正規表現の末尾に \b (単語境界) を追加し、12/31/2025 のような4桁年の日付の一部に誤ってマッチするのを防ぎます。
-
-【最後に】年がない形式: MM/DD。現在の年を補う必要があるため、最も優先順位を低くします。これも \b を使い、金額表記（例: 1,234.56）の一部に誤マッチしないようにします。
-
-3. 解析ロジックの簡素化
-メインのループ処理は、この dateFormats 配列を順番に試し、最初にマッチしたものが見つかった時点で処理を確定し、ループを抜けるように書き換えます。これにより、if/else if の複雑な分岐が不要になり、非常にシンプルになります。
-
-修正後のコード全体
-以下が、上記の方針で書き換えた parseReceiptText 関数の全体像です。
-
-JavaScript
-
-// レシートテキストの解析関数（グループ化・優先順位付けを導入した修正版）
-const parseReceiptText = (text) => {
-    const result = { date: null, amount: null, notes: '' };
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-    // ▼▼▼ 日付フォーマットのグループを優先順位順に定義 ▼▼▼
-    const dateFormats = [
-        // --- グループ1: 年が4桁で先頭（最優先） ---
-        // 例: 2024/01/31, 2024-01-31, 2024.01.31
-        {
-            name: 'YYYY/MM/DD',
-            regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,
-            formatter: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
-        },
-        // --- グループ2: 年が4桁で末尾 ---
-        // 例: 01/31/2024, 01-31-2024, 01.31.2024
-        {
-            name: 'MM/DD/YYYY',
-            regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,
-            formatter: (match) => `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
-        },
-        // --- グループ3: 年が2桁 ---
-        // 例: 01/31/24, 01-31-24, 01.31.24
-        // \b は単語境界。これがないと YYYY 形式の一部（例: "20" of "2024"）にマッチする可能性があるため追加。
-        {
+  　　   {
             name: 'MM/DD/YY',
             regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/,
             formatter: (match) => {
