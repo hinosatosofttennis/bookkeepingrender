@@ -151,18 +151,17 @@ const processOCR = async (imageBuffer) => {
 
 // レシートテキストの解析関数（修正版）
 const parseReceiptText = (text) => {
-    const result = { date: null, amount: null, notes: null }; // amountの初期値をnullに変更
+    const result = { date: '', amount: null, notes: '' }; // amountの初期値をnullに変更
 
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
        // ▼▼▼ 日付の検出を改善（ドット区切りに対応） ▼▼▼
     const dateRegexes = [
-      /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/, 
-      /(\d{4})年\(\d{1,2})月\(\d{1,2})日/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD// YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
-      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
-      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{1,2})/,      // YY/MM/DD, YY-MM-DD, YY.MM.DD（2桁年）
-      /(\d{1,2})[/.-](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
+      /(\d{4})[/.-年](\d{1,2})[/.-月](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+      /(\d{1,2})[/.-月](\d{1,2})[/.-日](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
+      /(\d{1,2})[/.-年](\d{1,2})[/.-月](\d{1,2})/,      // YY/MM/DD, YY-MM-DD, YY.MM.DD（2桁年）
+      /(\d{1,2})[/.-月](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
     ];
 
     for (const line of lines) {
