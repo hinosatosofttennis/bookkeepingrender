@@ -149,132 +149,100 @@ const processOCR = async (imageBuffer) => {
   }
 };
 
-Gemini
-
-2.5 Pro
-
-
-PRO
-Gemini との会話
-
-// レシートテキストの解析関数（修正版）
-
+// レシートテキストの解析関数（グループ化・優先順位付けを導入した修正版）
 const parseReceiptText = (text) => {
+    const result = { date: null, amount: null, notes: '' };
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-    const result = { date: null, amount: null, notes: '' }; // amountの初期値をnullに変更
+    // ▼▼▼ 日付フォーマットのグループを優先順位順に定義 ▼▼▼
+    const dateFormats = [
+        // --- グループ1: 年が4桁で先頭（最優先） ---
+        // 例: 2024/01/31, 2024-01-31, 2024.01.31
+        {
+            name: 'YYYY/MM/DD',
+            regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,
+            formatter: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+        },
+        // --- グループ2: 年が4桁で末尾 ---
+        // 例: 01/31/2024, 01-31-2024, 01.31.2024
+        {
+            name: 'MM/DD/YYYY',
+            regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,
+            formatter: (match) => `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
+        },
+        // --- グループ3: 年が2桁 ---
+        // 例: 01/31/24, 01-31-24, 01.31.24
+        // \b は単語境界。これがないと YYYY 形式の一部（例: "20" of "2024"）にマッチする可能性があるため追加。
+     　　{
+　　 　　　   name: 'YY/MM/DD',
+ 　　　　　   // 正規表現の順番を YY, MM, DD に変更
+ 　　　　　   regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/, 
+ 　　　　　   formatter: (match) => {
+  　　　　　      // match[1] が年（YY）になる
+ 　　　　　       const year = parseInt(match[1], 10); 
+ 　　　　　       const fullYear = year > 50 ? 1900 + year : 2000 + year;
+        
+   　　　　　     // match[2] が月（MM）、match[3] が日（DD）になる
+     　　　　　   return `${fullYear}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+  　　　　　  }
+　　　　　},
+   
+        {
+            name: 'MM/DD/YY',
+            regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/,
+            formatter: (match) => {
+                const year = parseInt(match[3], 10);
+                // 2桁の年から4桁の年を推測（50より大きければ19xx年、そうでなければ20xx年）
+                const fullYear = year > 50 ? 1900 + year : 2000 + year;
+                return `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+            }
+        },
+        // --- グループ4: 年なし（最も低い優先度） ---
+        // 例: 01/31, 01-31, 01.31
+        // \b を使い、金額（例: 1,234.56）の一部にマッチするのを防ぐ
+        {
+            name: 'MM/DD',
+            regex: /\b(\d{1,2})[/.-](\d{1,2})\b/,
+            formatter: (match) => {
+                const currentYear = new Date().getFullYear();
+                return `${currentYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+            }
+        }
+    ];
 
+    // ▼▼▼ 定義したフォーマットを使って日付を検索 ▼▼▼
+    for (const line of lines) {
+        for (const format of dateFormats) {
+            const match = line.match(format.regex);
+            if (match) {
+                console.log(`日付を検出しました。グループ: "${format.name}", マッチ:`, match[0]); // デバッグ用
+                result.date = format.formatter(match);
+                break; // この行で日付が見つかったので、他のフォーマットを試すのをやめる
+            }
+        }
+        if (result.date) {
+            break; // レシート全体で最初に見つかった日付を採用し、ループを終了
+        }
+    }
 
+    // （金額や備考の解析ロジックはここに続く...）
 
-    try {
+    return result;
+};
 
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+// --- テスト実行 ---
+const receipt1 = "領収書\n日付: 2025.09.10\n合計: 5,000円";
+const receipt2 = "RECEIPT\nDATE: 09/10/25\nTOTAL: $50.00";
+const receipt3 = "ご利用明細\n購入日 9-10\n金額 3,000";
 
+console.log('--- レシート1 ---');
+console.log(parseReceiptText(receipt1)); // { date: '2025-09-10', ... }
 
+console.log('\n--- レシート2 ---');
+console.log(parseReceiptText(receipt2)); // { date: '2025-09-10', ... }
 
-       // ▼▼▼ 日付の検出を改善（ドット区切りに対応） ▼▼▼
-
-    const dateRegexes = [
-
-      /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
-
-      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
-
-      /(\d{1,2})[/.-](\d{1,2})[/.-](\d{1,2})/,      // MM/DD/YY, MM-DD-YY, MM.DD.YY（2桁年）
-
-      /(\d{1,2})[/.-](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
-
-    ];
-
-
-
-    for (const line of lines) {
-
-      for (const regex of dateRegexes) {
-
-        const match = line.match(regex);
-
-        if (match && !result.date) {
-
-          console.log('日付マッチ:', match); // デバッグ用
-
-          
-
-       if (match[1] && match[1].length === 4) { 
-
-           // YYYY/MM/DD形式
-
-            result.date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`; 
-
-          } else if (match[3] && match[3].length === 4) { 
-
-            // MM/DD/YYYY形式
-
-            result.date = `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-
-          } else if (match[1] && match[2] && match[3] && match[3].length === 2) { 
-
-            // MM/DD/YY形式（2桁年）
-
-            const year = parseInt(match[3], 10);
-
-            const fullYear = year > 50 ? 1900 + year : 2000 + year; // 50より大きければ19xx年
-
-            result.date = `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-
-          } else if (match[1] && match[2] && !match[3]) { 
-
-            // MM/DD形式
-
-            const currentYear = new Date().getFullYear();
-
-            result.date = `${currentYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-
-          }
-
-          break;
-
-        }
-
-      }
-
-    }
-
-上記コードについて、日付のグループ分けを行い、グループ定義も設定したいです。また、グループの優先順位も設定したいです。コードをどう書換えすると良いか詳細に教えてください。
-
-
-
-
-
-思考プロセスを表示
-はい、承知いたしました。ご提示のコードを、日付フォーマットの「グループ定義」と「優先順位」をより明確にした、保守性の高い構造に書き換える方法を詳細に解説します。
-
-現在のコードはうまく機能しますが、正規表現とそれに対応する日付の組み立てロジックが分離しているため、新しいフォーマットを追加したり、優先順位を変更したりする際に少し手間がかかります。
-
-これを改善するために、各日付フォーマットを「名前、正規表現、フォーマッター（処理関数）」をセットにしたオブジェクトとして定義し、その配列を優先順位の高い順に並べる方法が非常に効果的です。
-
-なぜこの変更が良いのか
-可読性の向上: 「この正規表現は何を探していて、見つけたらどう処理するのか」が一つのオブジェクトにまとまっているため、コードが格段に読みやすくなります。
-
-保守性の向上: 新しい日付フォーマット（例: 令和6年1月1日）に対応したい場合、新しいオブジェクトを配列に追加するだけで済み、メインのループ処理に手を入れる必要がありません。
-
-明確な優先順位: 配列の順番そのものが優先順位となります。YYYY/MM/DD のような完全に特定できるフォーマットを先に置き、MM/DD のような情報が少ないものを後に置くことで、誤検出を防ぎやすくなります。
-
-変更点の詳細
-1. dateFormats 配列の定義
-まず、日付フォーマットのグループを定義する配列を作成します。各要素は以下のプロパティを持つオブジェクトです。
-
-name: グループの分かりやすい名前（デバッグや可読性のため）。
-
-regex: そのフォーマットに一致する正規表現。
-
-formatter: match した結果を受け取り、YYYY-MM-DD 形式の文字列を返す関数。
-
-2. 各グループの定義と優先順位
-以下の優先順位でグループを定義します。
-
-【最優先】年が4桁で先頭にある形式: YYYY/MM/DD や YYYY.MM.DD。最も情報が完全で誤解の余地がないため、最優先でチェックします。
-
-【次に優先】年が4桁で末尾にある形式: MM/DD/YYYY。これも情報が完全です。
+console.log('\n--- レシート3 ---');
+console.log(parseReceiptText(receipt3)); // { date: '2025-09-10', ... } (現在の年が2025年の場合)
 
 【その次】年が2桁の形式: MM/DD/YY。年を推測する必要がありますが、年月日が揃っているため、年がない形式より優先します。正規表現の末尾に \b (単語境界) を追加し、12/31/2025 のような4桁年の日付の一部に誤ってマッチするのを防ぎます。
 
@@ -349,8 +317,6 @@ const parseReceiptText = (text) => {
             break; // レシート全体で最初に見つかった日付を採用し、ループを終了
         }
     }
- // レシートテキストの解析関数（修正版）
-
 
         // --- 金額の検出を強化 ---
         let maxAmount = 0;
