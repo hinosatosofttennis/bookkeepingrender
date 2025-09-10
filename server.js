@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const vision = require('@google-cloud/vision');
 const cors = require('cors');
+const { GoogleAuth } = require('google-auth-library');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
