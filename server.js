@@ -156,97 +156,58 @@ const parseReceiptText = (text) => {
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-       // ▼▼▼ 日付の検出を改善（ドット区切りに対応） ▼▼▼
-    const dateRegexes = [
-      /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
-      /(\d{4})年\(\d{1,2})月\(\d{1,2})日/,        // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
-      /(\d{1,2})[/.-月](\d{1,2})[/.-日](\d{4})/,        // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY
-      /(\d{1,2})[/.-年](\d{1,2})[/.-月](\d{1,2})/,      // YY/MM/DD, YY-MM-DD, YY.MM.DD（2桁年）
-      /(\d{1,2})[/.-月](\d{1,2})/                     // MM/DD, MM-DD, MM.DD
+      const dateFormats = [
+        { group: 'YYYY年MM月DD日', regex: /(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
+        { group: 'YYYY/MM/DD', regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
+        { group: 'MM/DD/YYYY', regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/, formatter: m => `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` },
+        { group: 'YY/MM/DD', regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/, formatter: m => `${(parseInt(m[1], 10) > 50 ? 1900 : 2000) + parseInt(m[1], 10)}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
+        { group: 'MM/DD', regex: /\b(\d{1,2})[/.-](\d{1,2})\b/, formatter: m => `${new Date().getFullYear()}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` }
     ];
 
-    for (const line of lines) {
-      for (const regex of dateRegexes) {
-        const match = line.match(regex);
-        if (match && !result.date) {
-          console.log('日付マッチ:', match); // デバッグ用
-          
-          if (match[1] && match[1].length === 4) { 
-            // YYYY/M/DD形式
-            result.date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
-          } else if (match[3] && match[3].length === 4) { 
-            // MM/DD/YYYY形式
-            result.date = `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-          } else if (match[1] && match[1] && match[2] && match[3].length === 2) { 
-            // YY/MM/DD形式（2桁年）
-            const year = parseInt(match[1], 10);
-            const fullYear = year > 50 ? 1900 + year : 2000 + year; // 50より大きければ19xx年
-            result.date = `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-          } else if (match[1] && match[2] && !match[3]) { 
-            // MM/DD形式
-            const currentYear = new Date().getFullYear();
-            result.date = `${currentYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-          }
-          break;
-        }
-      }
-    }
+    const amountRegex = /(?:合計|小計|ご請求額)[\s]*[¥\\#￥]?[\s]*([0-9,]{2,})|[¥\\#￥][\s]*([0-9,]{3,})|([0-9,]{3,})[\s]*円/;
+    const storeKeywords = /店|施設|（株）|株式会社|商店|食堂|マート|ストア/;
+    const exclusionKeywords = /領収書|領収証|[0-9]{2,}[/-年.]|[¥\\#￥]?[0-9,]{3,}/;
 
-        // --- 金額の検出を強化 ---
-        let maxAmount = 0;
-        const amountRegexes = [
-            // "合計" や "小計" が含まれる行を最優先で検索
-            /(?:合計|小計|ご請求額)[\s]*[¥\\#￥]?[\s]*([0-9,]+)/,
-            // ¥, \, #, ￥ などの記号と数字の組み合わせ
-            /[¥\\#￥][\s]*([0-9,]{3,})/,
-            // 数字と "円" の組み合わせ
-            /([0-9,]{3,})[\s]*円/
-        ];
-
-        for (const line of lines) {
-            for (const regex of amountRegexes) {
-                const match = line.match(regex);
+    let maxAmount = 0;
+    lines.forEach((line, index) => {
+        if (!result.date) {
+            for (const format of dateFormats) {
+                const match = line.match(format.regex);
                 if (match) {
-                    const currentAmount = parseInt(match[1].replace(/,/g, ''), 10);
-                    // レシート内で最も大きい金額を「合計金額」と判断する
-                    if (currentAmount > maxAmount) {
-                        maxAmount = currentAmount;
-                    }
+                    result.date = format.formatter(match);
+                    break; 
                 }
             }
         }
-        if (maxAmount > 0) {
-            result.amount = maxAmount;
-        }
 
-        // --- 店舗名や摘要の検出 ---
-        const storeNameCandidates = lines.slice(0, 6);
-        // 優先度1: 「店」「施設」「（株）」など、店名らしいキーワードを含む行
-        const priorityKeywords = /店|施設|（株）|株式会社|商店|食堂|マート|ストア/;
-        for (const candidate of storeNameCandidates) {
-            // "領収書" という単語や日付、金額を含まない行を摘要候補とする
-            if (candidate.length > 1 && candidate.length < 30 &&
-                priorityKeywords.test(candidate) &&
-                !/領収書|領収証/.test(candidate) &&
-                !/[0-9]{2,}[/-年.]/.test(candidate) &&
-                !/[¥\\#￥]?[0-9,]{3,}/.test(candidate)) {
-                result.notes = candidate;
-                break;
+        const amountMatch = line.match(amountRegex);
+        if (amountMatch) {
+            const amountStr = amountMatch[1] || amountMatch[2] || amountMatch[3];
+            if (amountStr) {
+                const currentAmount = parseInt(amountStr.replace(/,/g, ''), 10);
+                if (currentAmount > maxAmount) {
+                    maxAmount = currentAmount;
+                }
             }
         }
 
-        // 日付が検出されない場合は、今日の日付を使用
-        if (!result.date) {
-            result.date = new Date().toISOString().slice(0, 10);
+        if (!result.notes && index < 6) {
+            if (line.length > 1 && line.length < 30 && storeKeywords.test(line) && !exclusionKeywords.test(line)) {
+                result.notes = line;
+            }
         }
+    });
 
-    } catch (error) {
-        console.error('テキスト解析エラー:', error);
+    if (maxAmount > 0) {
+        result.amount = maxAmount;
+    }
+    if (!result.date) {
+        result.date = new Date().toISOString().slice(0, 10);
     }
 
     return result;
 };
-
+      
 // ヘルスチェックエンドポイント
 app.get('/', (req, res) => {
   res.json({ 
