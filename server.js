@@ -149,58 +149,45 @@ const processOCR = async (imageBuffer) => {
   }
 };
 
-// レシートテキストの解析関数（グループ化・優先順位付けを導入した修正版）
+// レシートテキストの解析関数（デバッグ表示を強化）
 const parseReceiptText = (text) => {
     const result = { date: null, amount: null, notes: '' };
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-    // ▼▼▼ 日付フォーマットのグループを優先順位順に定義 ▼▼▼
+    // ▼▼▼ [デバッグ] 処理開始と解析対象の行配列を表示 ▼▼▼
+    console.log('[開始] 解析対象の行:', lines);
+
     const dateFormats = [
-        // --- グループ1: 年が4桁で先頭（最優先） ---
-        // 例: 2024/01/31, 2024-01-31, 2024.01.31
         {
-            name: 'YYYY/MM/DD',
+            group: 'YYYY/MM/DD',
             regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/,
             formatter: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
         },
-        // --- グループ2: 年が4桁で末尾 ---
-        // 例: 01/31/2024, 01-31-2024, 01.31.2024
         {
-            name: 'MM/DD/YYYY',
+            group: 'MM/DD/YYYY',
             regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/,
             formatter: (match) => `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
         },
-        // --- グループ3: 年が2桁 ---
-        // 例: 01/31/24, 01-31-24, 01.31.24
-        // \b は単語境界。これがないと YYYY 形式の一部（例: "20" of "2024"）にマッチする可能性があるため追加。
         {
-　　 　　　   name: 'YY/MM/DD',
- 　　　　　   // 正規表現の順番を YY, MM, DD に変更
- 　　　　　   regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/, 
- 　　　　　   formatter: (match) => {
-  　　　　　      // match[1] が年（YY）になる
- 　　　　　       const year = parseInt(match[1], 10); 
- 　　　　　       const fullYear = year > 50 ? 1900 + year : 2000 + year;
-        
-   　　　　　     // match[2] が月（MM）、match[3] が日（DD）になる
-     　　　　　   return `${fullYear}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
-  　　　　　  }
-　　　　　},
-  　　   {
-            name: 'MM/DD/YY',
+            group: 'MM/DD/YY',
             regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/,
             formatter: (match) => {
                 const year = parseInt(match[3], 10);
-                // 2桁の年から4桁の年を推測（50より大きければ19xx年、そうでなければ20xx年）
                 const fullYear = year > 50 ? 1900 + year : 2000 + year;
                 return `${fullYear}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
             }
         },
-        // --- グループ4: 年なし（最も低い優先度） ---
-        // 例: 01/31, 01-31, 01.31
-        // \b を使い、金額（例: 1,234.56）の一部にマッチするのを防ぐ
         {
-            name: 'MM/DD',
+            group: 'YY/MM/DD',
+            regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/,
+            formatter: (match) => {
+                const year = parseInt(match[1], 10);
+                const fullYear = year > 50 ? 1900 + year : 2000 + year;
+                return `${fullYear}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+            }
+        },
+        {
+            group: 'MM/DD',
             regex: /\b(\d{1,2})[/.-](\d{1,2})\b/,
             formatter: (match) => {
                 const currentYear = new Date().getFullYear();
@@ -209,21 +196,30 @@ const parseReceiptText = (text) => {
         }
     ];
 
-    // ▼▼▼ 定義したフォーマットを使って日付を検索 ▼▼▼
     for (const line of lines) {
+        // ▼▼▼ [デバッグ] どの行をチェックしているか表示 ▼▼▼
+        console.log(`\n--- Line: "${line}" をチェック中 ---`);
+
         for (const format of dateFormats) {
+            // ▼▼▼ [デバッグ] どのパターンを試しているか表示 ▼▼▼
+            console.log(`  [試行] "${format.group}" のパターンを試します...`);
+            
             const match = line.match(format.regex);
             if (match) {
-                console.log(`日付を検出しました。グループ: "${format.name}", マッチ:`, match[0]); // デバッグ用
+                console.log(`  ✅ [成功] 日付を検出しました！ グループ: "${format.group}", マッチ: "${match[0]}"`);
                 result.date = format.formatter(match);
-                break; // この行で日付が見つかったので、他のフォーマットを試すのをやめる
+                break;
             }
         }
         if (result.date) {
-            break; // レシート全体で最初に見つかった日付を採用し、ループを終了
+            break;
         }
     }
 
+    // ▼▼▼ [デバッグ] 最終結果を表示 ▼▼▼
+    console.log('\n[終了] 解析結果:', result);
+    return result;
+};
         // --- 金額の検出を強化 ---
         let maxAmount = 0;
         const amountRegexes = [
@@ -271,10 +267,6 @@ const parseReceiptText = (text) => {
         if (!result.date) {
             result.date = new Date().toISOString().slice(0, 10);
         }
-
-    } catch (error) {
-        console.error('テキスト解析エラー:', error);
-    }
 
     return result;
 };
