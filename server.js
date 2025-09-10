@@ -162,7 +162,6 @@ const lines = text.split('\n').map(line => line.trim()).filter(line => line.leng
         { group: 'YYYY/MM/DD', regex: /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/, formatter: m => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
         { group: 'MM/DD/YYYY', regex: /(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/, formatter: m => `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` },
         { group: 'YY/MM/DD', regex: /\b(\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/, formatter: m => `${(parseInt(m[1], 10) > 50 ? 1900 : 2000) + parseInt(m[1], 10)}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` },
-        { group: 'MM/DD', regex: /\b(\d{1,2})[/.-](\d{1,2})\b/, formatter: m => `${new Date().getFullYear()}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` }
     ];
 
     const amountRegex = /(?:合計|小計|ご請求額)[\s]*[¥\\#￥]?[\s]*([0-9,]{2,})|[¥\\#￥][\s]*([0-9,]{3,})|([0-9,]{3,})[\s]*円/;
