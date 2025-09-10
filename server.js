@@ -151,7 +151,7 @@ const processOCR = async (imageBuffer) => {
 
 // レシートテキストの解析関数（修正版）
 const parseReceiptText = (text) => {
-    const result = { date: '', amount: null, notes: '' }; // amountの初期値をnullに変更
+    const result = { date: null, amount: null, notes: null }; // amountの初期値をnullに変更
 
     try {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
