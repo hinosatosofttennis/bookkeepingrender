@@ -48,6 +48,10 @@ const upload = multer({
     }
 });
 
+// 環境変数からサービスアカウントキーを取得
+    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
+
 // Google Cloud Vision APIクライアントの変数
 let visionClient;
 
