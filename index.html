@@ -41,6 +41,36 @@
             <div class="mt-12 flex justify-center">
                  <img src="https://placehold.co/800x450/FFFFFF/4F46E5?text=App+Screenshot" alt="Bookkeeのアプリ画面" class="rounded-lg shadow-2xl max-w-full md:max-w-3xl">
             </div>
+            <!-- 
+  【変更のポイント】
+  1. 親要素に `flex` を指定して、子要素（画像）を横並びにします。
+  2. `gap-4` を追加して、画像と画像の間に均等な隙間を作ります。
+  3. 各画像を `div` で囲み、`w-1/3` を指定して、それぞれが3分の1の幅を持つようにします。
+  4. プレースホルダーの画像のURLを、縦長のもの（例: 400x600）に変更しました。
+-->
+<div class="mt-12">
+    <!-- 全体の最大幅と中央揃えを制御するコンテナ -->
+    <div class="max-w-5xl mx-auto px-4">
+        <!-- flexboxを使って画像を横並びにし、gapで画像間の隙間を設定 -->
+        <div class="flex flex-row gap-4 md:gap-6">
+            <!-- 1枚目の画像 -->
+            <div class="w-1/3">
+                <img src="Screenshot_20250913_123944_Chrome.jpg?text=Screen+1" alt="アプリ画面1" class="rounded-lg shadow-2xl w-full h-auto">
+            </div>
+            <!-- 2枚目の画像 -->
+            <div class="w-1/3">
+                <img src="Screenshot_20250913_123939_Chrome.jpg?text=Screen+2" alt="アプリ画面2" class="rounded-lg shadow-2xl w-full h-auto">
+            </div>
+            <!-- 3枚目の画像 -->
+            <div class="w-1/3">
+                <img src="Screenshot_20250913_123951_Chrome.jpg?text=Screen+3" alt="アプリ画面3" class="rounded-lg shadow-2xl w-full h-auto">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            
         </section>
 
         <!-- Features Section -->
