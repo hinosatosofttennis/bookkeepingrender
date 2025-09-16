@@ -1,0 +1,10 @@
+-- 資産、負債、純資産、費用、収益の5つの大分類を定義
+CREATE TYPE major_account_category AS ENUM ('assets', 'liabilities', 'net_assets', 'expenses', 'revenues');
+
+CREATE TABLE master_accounts (
+    id SERIAL PRIMARY KEY,
+    category major_account_category NOT NULL,
+    sub_category VARCHAR(100) NOT NULL, -- 例: 流動資産, 固定資産
+    account_name VARCHAR(100) UNIQUE NOT NULL, -- 例: 現金, 売掛金
+    default_description TEXT -- 勘定科目の説明
+);
