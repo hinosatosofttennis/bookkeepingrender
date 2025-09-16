@@ -2517,6 +2517,7 @@ B,連結の範囲の変更に伴う現金及び現金同等物の増減額（△
 B,合併に伴う現金及び現金同等物の増加額,合併に伴う現金及び現金同等物の増加額,Increase in cash and cash equivalents resulting from merger,Increase in cash and cash equivalents resulting from merger-CCE,,,jppfs_cor,IncreaseInCashAndCashEquivalentsResultingFromMergerCCE,xbrli:monetaryItemType,xbrli:item,duration,,FALSE,2,
 B,連結子会社の合併による現金及び現金同等物の増減額（△は減少）,連結子会社の合併による現金及び現金同等物の増減額（△は減少）,Increase (decrease) in cash and cash equivalents resulting from merger of consolidated subsidiaries,Increase (decrease) in cash and cash equivalents resulting from merger of consolidated subsidiaries - CCE,,,jppfs_cor,IncreaseDecreaseInCashAndCashEquivalentsResultingFromMergerOfSubsidiariesCCE,xbrli:monetaryItemType,xbrli:item,duration,,FALSE,2,
 B,非連結子会社との合併に伴う現金及び現金同等物の増加額,非連結子会社との合併に伴う現金及び現金同等物の増加額,Increase in cash and cash equivalents resulting from merger with unconsolidated subsidiaries,Increase in cash and cash equivalents resulting from merger with unconsolidated subsidiaries-CCE,,,jppfs_cor,IncreaseInCashAndCashEquivalentsResultingFromMergerWithUnconsolidatedSubsidiariesCCE,xbrli:monetaryItemType,xbrli:item,duration,,FALSE,2,
+
 A,現金及び現金同等物の残高,現金及び現金同等物の残高,Cash and cash equivalents,Cash and cash equivalents,"現金及び現金同等物の期首残高[期首]
 現金及び現金同等物の期末残高[期末]
 現金及び現金同等物の期首残高[四連|期首]
