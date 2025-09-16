@@ -4,9 +4,96 @@ const multer = require('multer');
 const vision = require('@google-cloud/vision');
 const cors = require('cors');
 const { GoogleAuth } = require('google-auth-library');
+// server.js の冒頭部分
+const express = require('express');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(express.json()); // JSONリクエストを扱えるようにする
+app.use(cors()); // CORSを許可
+
+// Renderが提供するDATABASE_URL環境変数を使ってデータベースに接続
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// server.js
+
+const bcrypt = require('bcryptjs');
+
+app.post('/api/register', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'メールアドレスとパスワードは必須です。' });
+  }
+
+  try {
+    // パスワードをハッシュ化
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // データベースに新しいユーザーを保存
+    const newUser = await pool.query(
+      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email",
+      [email, passwordHash]
+    );
+
+    res.status(201).json(newUser.rows[0]);
+
+  } catch (error) {
+    console.error('ユーザー登録エラー:', error);
+    // メールアドレスが既に存在する場合など
+    res.status(500).json({ error: 'ユーザー登録に失敗しました。' });
+  }
+});
+
+// server.js
+
+const jwt = require('jsonwebtoken');
+
+// ★重要: このSECRETは、Renderの環境変数に設定してください
+const JWT_SECRET = process.env.JWT_SECRET; 
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'メールアドレスとパスワードを入力してください。' });
+  }
+
+  try {
+    // メールアドレスでユーザーを検索
+    const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.status(401).json({ error: '認証情報が無効です。' }); // ユーザーが見つからない
+    }
+
+    // 入力されたパスワードとDBのハッシュを比較
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: '認証情報が無効です。' }); // パスワードが違う
+    }
+
+    // 認証成功！JWTトークンを生成して返す
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: '1d', // トークンの有効期限 (例: 1日)
+    });
+
+    res.json({ message: 'ログイン成功', token: token });
+
+  } catch (error) {
+    console.error('ログインエラー:', error);
+    res.status(500).json({ error: 'ログイン処理中にエラーが発生しました。' });
+  }
+});
 
 // CORS設定（Claude.ai artifacts用に最適化）
 app.use(cors({
