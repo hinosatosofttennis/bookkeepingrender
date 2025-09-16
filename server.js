@@ -95,6 +95,50 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// server.js (APIエンドポイントの例)
+
+// ★認証チェックを行うミドルウェア（後で作成）
+const { authenticateToken } = require('./authMiddleware'); 
+
+// 全ての勘定科目を階層構造で取得するAPI
+app.get('/api/accounts', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT category, sub_category, account_name FROM master_accounts ORDER BY id");
+        
+        // 取得したデータを階層構造に整形して返す
+        const structuredAccounts = structureAccounts(result.rows); // この整形関数は別途作成
+
+        res.json(structuredAccounts);
+
+    } catch (error) {
+        console.error('勘定科目リストの取得エラー:', error);
+        res.status(500).json({ error: '勘定科目の取得に失敗しました。' });
+    }
+});
+
+// ユーザーがよく使う勘定科目トップ10を取得するAPI
+app.get('/api/accounts/top10', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId; // 認証ミドルウェアからユーザーIDを取得
+
+        const result = await pool.query(
+            `SELECT m.account_name
+             FROM user_account_usage u
+             JOIN master_accounts m ON u.account_id = m.id
+             WHERE u.user_id = $1
+             ORDER BY u.usage_count DESC
+             LIMIT 10`,
+            [userId]
+        );
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('トップ10勘定科目の取得エラー:', error);
+        res.status(500).json({ error: 'よく使う勘定科目の取得に失敗しました。' });
+    }
+});
+
 // CORS設定（Claude.ai artifacts用に最適化）
 app.use(cors({
   origin: [
