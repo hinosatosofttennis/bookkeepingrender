@@ -1,0 +1,10 @@
+CREATE TABLE fixed_assets (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    asset_name VARCHAR(255) NOT NULL,
+    acquisition_date DATE NOT NULL,
+    acquisition_cost INTEGER NOT NULL,
+    useful_life INTEGER NOT NULL, -- 耐用年数
+    depreciation_method VARCHAR(50) NOT NULL, -- 例: 定額法, 定率法
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
