@@ -5,7 +5,6 @@ const vision = require('@google-cloud/vision');
 const cors = require('cors');
 const { GoogleAuth } = require('google-auth-library');
 // server.js の冒頭部分
-const express = require('express');
 const { Pool } = require('pg');
 
 const app = express();
