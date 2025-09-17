@@ -497,4 +497,26 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
     }
 });
 
+// server.js (末尾に追加)
+
+app.get('/api/transactions', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const transactions = await pool.query(
+            `SELECT t.id, t.transaction_date, m.account_name, t.amount, t.notes, t.created_at
+             FROM transactions t
+             JOIN master_accounts m ON t.account_id = m.id
+             WHERE t.user_id = $1
+             ORDER BY t.transaction_date DESC, t.created_at DESC`,
+            [userId]
+        );
+
+        res.json(transactions.rows);
+    } catch (error) {
+        console.error('取引一覧取得エラー:', error);
+        res.status(500).json({ error: '取引の取得に失敗しました。' });
+    }
+});
+
 startServer();
