@@ -204,16 +204,7 @@
     </div>
 
     <script>
-    // ▼▼▼ この部分を追加 ▼▼▼
-    // ページが読み込まれた瞬間に認証トークンを確認
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        // トークンがなければ、ログインページに強制的にリダイレクト
-        alert('ログインが必要です。');
-        window.location.href = 'login.html';
-    }
-    // ▲▲▲ ここまで追加 ▲▲▲
-    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIGURATION ---
         // !!! 重要 !!!
         // 下の行に、RenderでデプロイしたWeb ServiceのURLとAPIエンドポイントを設定してください
