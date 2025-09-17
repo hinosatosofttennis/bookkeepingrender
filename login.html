@@ -42,7 +42,7 @@
                 // ★重要：受け取ったトークンをブラウザのlocalStorageに保存
                 localStorage.setItem('authToken', result.token);
                 alert('ログインしました。');
-                window.location.href = 'システム.html'; // メインのアプリ画面へ
+                window.location.href = 'bookkeepingsystem.html'; // メインのアプリ画面へ
             } else {
                 const result = await response.json();
                 alert('ログインに失敗しました: ' + result.error);
