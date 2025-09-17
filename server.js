@@ -519,4 +519,29 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
     }
 });
 
+// server.js (末尾に追加)
+
+app.delete('/api/transactions/:id', authenticateToken, async (req, res) => {
+    const transactionId = req.params.id;
+    const userId = req.user.userId;
+
+    try {
+        const deleteResult = await pool.query(
+            "DELETE FROM transactions WHERE id = $1 AND user_id = $2 RETURNING *",
+            [transactionId, userId]
+        );
+
+        if (deleteResult.rowCount === 0) {
+            // 削除対象が見つからない、または他人のデータを削除しようとした場合
+            return res.status(404).json({ error: '削除対象の取引が見つかりません。' });
+        }
+
+        res.status(200).json({ message: '取引を削除しました。' });
+
+    } catch (error) {
+        console.error('取引削除エラー:', error);
+        res.status(500).json({ error: '取引の削除に失敗しました。' });
+    }
+});
+
 startServer();
