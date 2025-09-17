@@ -451,4 +451,50 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// server.js (末尾に追加)
+
+app.post('/api/transactions', authenticateToken, async (req, res) => {
+    const { account_id, transaction_date, amount, notes } = req.body;
+    const userId = req.user.userId;
+
+    if (!account_id || !transaction_date || !amount) {
+        return res.status(400).json({ error: '勘定科目、日付、金額は必須です。' });
+    }
+
+    const client = await pool.connect();
+    try {
+        // データベースのトランザクションを開始
+        await client.query('BEGIN');
+
+        // 1. transactionsテーブルに新しい取引を挿入
+        const newTransaction = await client.query(
+            `INSERT INTO transactions (user_id, account_id, transaction_date, amount, notes)
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [userId, account_id, transaction_date, amount, notes]
+        );
+
+        // 2. user_account_usageテーブルの利用回数を更新（存在しない場合は新規作成）
+        await client.query(
+            `INSERT INTO user_account_usage (user_id, account_id, usage_count)
+             VALUES ($1, $2, 1)
+             ON CONFLICT (user_id, account_id)
+             DO UPDATE SET usage_count = user_account_usage.usage_count + 1`,
+            [userId, account_id]
+        );
+
+        // トランザクションをコミット（変更を確定）
+        await client.query('COMMIT');
+
+        res.status(201).json(newTransaction.rows[0]);
+
+    } catch (error) {
+        // エラーが発生した場合はロールバック（変更を取り消し）
+        await client.query('ROLLBACK');
+        console.error('取引登録エラー:', error);
+        res.status(500).json({ error: '取引の登録に失敗しました。' });
+    } finally {
+        client.release();
+    }
+});
+
 startServer();
